@@ -10,7 +10,9 @@ from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QMainWindow, QWidget, QVBoxLayout
 from PyQt5.QtCore import QSize
 from PyQt5.Qt import QPushButton, QFileDialog, QFileInfo, QTextEdit
-from distlib._backport.shutil import copyfile
+from shutil import copyfile
+import os
+import glob
 
 class MainWindow(QMainWindow):
     def __init__(self, src, dest):
@@ -64,11 +66,7 @@ class MainWindow(QMainWindow):
         self.destination.setText("Destination: " + self.destinationPath)
         self.textOutput.insertPlainText("Destination: " + self.destinationPath + "\n")
         
-    def copyFiles(self, source = None, destination = None):
-        if source is not None and destination is not None:
-            self.sourcePath = source
-            self.destinationPath = destination
-            
+    def copyFiles(self):
         if self.sourcePath is not None and self.destinationPath is not None:
             file = QFileInfo(self.sourcePath)
     
@@ -78,13 +76,18 @@ class MainWindow(QMainWindow):
     
             count = 1
             for x in lines:
-                if QFileInfo(x).exists():
+                mList = glob.glob(file.path() + '/**/' + os.path.basename(x), recursive=True)
+                if 1 == len(mList):
+                    # Found 1 file we will use this one
+                    x = mList[0]
                     y = self.destinationPath + '/IMG_' + "{:04}".format(count) + '.' + QFileInfo(x).suffix()
                     self.textOutput.insertPlainText('copying ' + x + ' to ' + y + "\n")
                     copyfile(x, y)
                     count = count + 1
-                else:
+                elif 0 == len(mList):
                     self.textOutput.insertPlainText('File ' + x + ' could not be found, will be skipped.' + "\n")
+                else:
+                    self.textOutput.insertPlainText('Multiple files for ' + x + ' have been found, will be skipped.' + "\n")
             
             if(len(lines) != count-1):
                 self.textOutput.insertPlainText('Warning: Could not copy all files!\n')
