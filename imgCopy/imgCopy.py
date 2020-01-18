@@ -76,18 +76,24 @@ class MainWindow(QMainWindow):
     
             count = 1
             for x in lines:
-                mList = glob.glob(file.path() + '/**/' + os.path.basename(x), recursive=True)
-                if 1 == len(mList):
-                    # Found 1 file we will use this one
-                    x = mList[0]
+                if QFileInfo(x).exists():
                     y = self.destinationPath + '/IMG_' + "{:04}".format(count) + '.' + QFileInfo(x).suffix()
                     self.textOutput.insertPlainText('copying ' + x + ' to ' + y + "\n")
                     copyfile(x, y)
                     count = count + 1
-                elif 0 == len(mList):
-                    self.textOutput.insertPlainText('File ' + x + ' could not be found, will be skipped.' + "\n")
                 else:
-                    self.textOutput.insertPlainText('Multiple files for ' + x + ' have been found, will be skipped.' + "\n")
+                    mList = glob.glob(file.path() + '/**/' + os.path.basename(x), recursive=True)
+                    if 1 == len(mList):
+                        # Found 1 file we will use this one
+                        x = mList[0]
+                        y = self.destinationPath + '/IMG_' + "{:04}".format(count) + '.' + QFileInfo(x).suffix()
+                        self.textOutput.insertPlainText('copying ' + x + ' to ' + y + "\n")
+                        copyfile(x, y)
+                        count = count + 1
+                    elif 0 == len(mList):
+                        self.textOutput.insertPlainText('File ' + x + ' could not be found, will be skipped.' + "\n")
+                    else:
+                        self.textOutput.insertPlainText('Multiple files for ' + x + ' have been found, will be skipped.' + "\n")
             
             if(len(lines) != count-1):
                 self.textOutput.insertPlainText('Warning: Could not copy all files!\n')
